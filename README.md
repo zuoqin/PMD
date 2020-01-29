@@ -1,12 +1,10 @@
 To run:
 1. Install java
+2. Install Maven `sudo apt install maven`
 2. Install Python 3.6 or higher
-3. Download and install [PMD](https://pmd.github.io/#downloads)
-4. Make corresponding [PMD](https://pmd.github.io) `bin/run.sh` executable
-5. Execute: `python3 java/pmd/run.py java/bin/run.sh ../input/Complicated.java`, where:
+5. Execute: `python3 run.py ../input/Complicated.java`, where:
   * first parameter is path to current folder run.py
-  * second parameter is path to installed [PMD](https://pmd.github.io) tool run.sh file
-  * third parameter is path to analyzed java file.
+  * second parameter is path to analyzed java file.
 
 
 Java file sample:

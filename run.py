@@ -1,6 +1,8 @@
 import sys
 import subprocess
 import os
+import uuid
+import shutil
 
 class bcolors:
     HEADER = '\033[95m'
@@ -12,20 +14,32 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-result = subprocess.run([sys.argv[1], 'pmd', '-d', sys.argv[2], '-f', 'text', '-R', 'cyclical.xml', '-language', 'java'], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-out = result.stdout.decode('utf-8')
+root = uuid.uuid4().hex
+dirName = root + '/src/main/java'
+os.makedirs(dirName)
+dest = shutil.copyfile(sys.argv[1], dirName + '/input.java')
+dest = shutil.copyfile('pom.xml', root + '/pom.xml')
+dest = shutil.copyfile('cyclical.xml', root + '/cyclical.xml')
 
-pos1 = out.find('PMDException: Error while parsing')
-if pos1 >= 0:
-    print(f"{bcolors.FAIL}Incorrect input file{bcolors.ENDC}")
-else:
-    pos1 = out.find('has a total cyclomatic complexity')
-    pos1 = out.find('of ', pos1)
-    pos1 = pos1 + 3
-    pos2 = out.find('(', pos1)
+result = subprocess.run(['mvn', 'pmd:pmd'], cwd=root, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    complexity = int(out[pos1:pos2-1])
-    if complexity <= 10:
-        print(f"{bcolors.OKGREEN}Total cyclomatic complexity: " + str(complexity) + f"{bcolors.ENDC}")
+f = open(root + "/target/pmd.xml", "r")
+if f != None:
+    out = f.read()
+    pos1 = out.find('PMDException: Error while parsing')
+    if pos1 >= 0:
+        print(f"{bcolors.FAIL}Incorrect input file{bcolors.ENDC}")
     else:
-        print(f"{bcolors.WARNING}Total cyclomatic complexity: " + str(complexity) + f"{bcolors.ENDC}")
+        pos1 = out.find('has a total cyclomatic complexity')
+        pos1 = out.find('of ', pos1)
+        pos1 = pos1 + 3
+        pos2 = out.find('(', pos1)
+
+        complexity = int(out[pos1:pos2-1])
+        if complexity <= 10:
+            print(f"{bcolors.OKGREEN}Total cyclomatic complexity: " + str(complexity) + f"{bcolors.ENDC}")
+        else:
+            print(f"{bcolors.WARNING}Total cyclomatic complexity: " + str(complexity) + f"{bcolors.ENDC}")
+else:
+    print(f"{bcolors.FAIL}File analyze failed{bcolors.ENDC}")
+shutil.rmtree(root)
